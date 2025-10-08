@@ -12,7 +12,9 @@ class atom {
     double y;
     double z;
     public:
+    atom(){};
     atom(double x, double y, double z) : x(x), y(y), z(z) {};
+    ~atom(){};
 };
 
 
