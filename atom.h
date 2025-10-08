@@ -8,7 +8,11 @@
 
 
 class atom {
-
+    double x;
+    double y;
+    double z;
+    public:
+    atom(double x, double y, double z) : x(x), y(y), z(z) {};
 };
 
 
