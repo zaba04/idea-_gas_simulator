@@ -65,14 +65,17 @@ int main() {
 
         //sprawdzić artefakty układające się po krzyżu
 
-        std::cout << tmpMomx << " " << tmpMomy << " " << tmpMomz << std::endl;
         atoms[i].set_p(tmpMomx, tmpMomy, tmpMomz);
     }
 
     for (size_t i = 0; i <= atoms.size(); ++i) {
-
+        double tmpx = atoms[i].get_px() - 1./atoms.size()*sumMomX;
+        double tmpy = atoms[i].get_py() - 1./atoms.size()*sumMomY;
+        double tmpz = atoms[i].get_pz() - 1./atoms.size()*sumMomZ;
+        atoms[i].set_p(tmpx, tmpy, tmpz);
+        std::cout << tmpx << " " << tmpy << " " << tmpz << std::endl;
     }
-    //został boost do środka spoczynku do dopisania
+
 
     return 0;
 }
