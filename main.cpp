@@ -1,25 +1,78 @@
 #include <iostream>
+#include <cmath>
+#include <random>
+#include "atom.h"
+#include "parameters.h"
 
-// TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+
+#define k_b 0.00831
 int main() {
-    // TIP Press <shortcut actionId="RenameElement"/> when your caret is at the
-    // <b>lang</b> variable name to see how CLion can help you rename it.
-    auto lang = "C++";
-    std::cout << "Hello and welcome to " << lang << "!\n";
 
-    for (int i = 1; i <= 5; i++) {
-        // TIP Press <shortcut actionId="Debug"/> to start debugging your code.
-        // We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/>
-        // breakpoint for you, but you can always add more by pressing
-        // <shortcut actionId="ToggleLineBreakpoint"/>.
-        std::cout << "i = " << i << std::endl;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> dis(std::nextafter(0.0, 1.0), 1.0);
+    std::uniform_int_distribution<int> sig(-1, 1);
+
+
+    parameters parameters;
+
+    std::vector<atom> atoms;
+
+
+    //part setting start xyz values
+    for (int i = 0; i < parameters.get_n(); ++i) {
+        for (int j = 0; j < parameters.get_n(); ++j) {
+            for (int k = 0; k < parameters.get_n(); ++k) {
+                float tmpx = 0;
+                float tmpy = 0;
+                float tmpz = 0;
+
+                double b0[3] = {parameters.get_a(), 0, 0};
+                double b1[3] = {parameters.get_a()/2., (parameters.get_a()*sqrt(3))/2. , 0};
+                double b2[3] = {parameters.get_a()/2., (parameters.get_a()*sqrt(3))/6. , parameters.get_a()*sqrt(2/3.)};
+
+                float tmpp = (parameters.get_n()-1);
+
+                tmpx = (i - tmpp/2) * b0[0] + (j - tmpp/2) * b1[0] + (k - tmpp/2) * b2[0];
+                tmpy = (i - tmpp/2) * b0[1] + (j - tmpp/2) * b1[1] + (k - tmpp/2) * b2[1];
+                tmpz = (i - tmpp/2) * b0[2] + (j - tmpp/2) * b1[2] + (k - tmpp/2) * b2[2];
+
+
+                atoms.push_back(atom(tmpx, tmpy, tmpz));
+                // std::cout << tmpx << "  " << tmpy << "  " << tmpz << std::endl;
+            }
+        }
     }
+
+    double sumMomX = 0.;
+    double sumMomY = 0.;
+    double sumMomZ = 0.;
+    //generating momenta
+    for (size_t i = 0; i <= atoms.size(); ++i) {
+        double tmpEx = -0.5 * (k_b * parameters.get_t_zero()* std::log(dis(gen)));
+        double tmpEy = -0.5 * (k_b * parameters.get_t_zero()* std::log(dis(gen)));
+        double tmpEz = -0.5 * (k_b * parameters.get_t_zero()* std::log(dis(gen)));
+
+        int sign = sig(gen);
+        double tmpMomx = sign * sqrt(2* parameters.get_m() * tmpEx);
+        sumMomX += tmpMomx;
+        sign = sig(gen);
+        double tmpMomy = sign * sqrt(2* parameters.get_m() * tmpEy);
+        sumMomY += tmpMomy;
+        sign = sig(gen);
+        double tmpMomz = sign * sqrt(2* parameters.get_m() * tmpEz);
+        sumMomZ += tmpMomz;
+
+        //sprawdzić artefakty układające się po krzyżu
+
+        std::cout << tmpMomx << " " << tmpMomy << " " << tmpMomz << std::endl;
+        atoms[i].set_p(tmpMomx, tmpMomy, tmpMomz);
+    }
+
+    for (size_t i = 0; i <= atoms.size(); ++i) {
+
+    }
+    //został boost do środka spoczynku do dopisania
 
     return 0;
 }
-
-// TIP See CLion help at <a
-// href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>.
-//  Also, you can try interactive lessons for CLion by selecting
-//  'Help | Learn IDE Features' from the main menu.

@@ -5,4 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(kms_1 main.cpp
         atom.cpp
-        atom.h)
+        atom.h
+        parameters.cpp
+        parameters.h)
