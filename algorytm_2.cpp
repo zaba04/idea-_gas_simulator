@@ -10,39 +10,81 @@ void algorytm_2::algo_2(std::vector<atom>& atoms, parameters& params, system_par
     double tmpVP = 0.0;
     double tmpFs = 0.0;
 
-    for (size_t i = 0; i < atoms.size(); i++) {
+    const double f = params.get_f();
+    const double l = params.get_l();
+    const double ee = params.get_ee();
+    const double r = params.get_r();
+    const size_t n = atoms.size();
+
+
+    for (size_t i = 0; i < n; i++) {
         //for that calculates Vs ad Vp and Fsi Fpi
-        double tmpFsi = 0.0;
+        double Fsi_x = 0.0;
+        double Fsi_y = 0.0;
+        double Fsi_z = 0.0;
+
         double tmpFpi = 0.0;
 
-        double tmpR = atoms[i].get_R();
+        const double xi = atoms[i].get_x();
+        const double yi = atoms[i].get_y();
+        const double zi = atoms[i].get_z();
+        const double ri = atoms[i].get_R();
 
-        if (tmpR >= params.get_l()) {
-            tmpVS += 0.5 * params.get_f() * (tmpR - params.get_l()) * (tmpR - params.get_l());
-            //force from walls ov vessel
-            tmpFsi = params.get_f() * (params.get_l() - tmpR);
-            tmpFs += fabs(tmpFsi);
-        }
+        if (ri >= l) {
+            const double delta = ri - l;
+            tmpVS += 0.5 * f * delta * delta;
 
-        for (size_t j = 0; j < i; j++) {
-            //Vp section
+            if (ri > 1e-10) {
+                const double force_magnitude = f * (l - ri);
 
-            double dx = atoms[i].get_x() - atoms[j].get_x();
-            double dy = atoms[i].get_y() - atoms[j].get_y();
-            double dz = atoms[i].get_z() - atoms[j].get_z();
-            double tmpRjk = sqrt(dx*dx + dy*dy + dz*dz);
+                Fsi_x = force_magnitude * xi / ri;
+                Fsi_y = force_magnitude * yi / ri;
+                Fsi_z = force_magnitude * zi / ri;
 
-            if (tmpRjk > 1e-10) {  // Unikaj dzielenia przez 0
-                tmpVP += params.get_ee() * (pow(params.get_r()/tmpRjk, 12) - 2.0 * pow(params.get_r()/tmpRjk, 6));
-
-                double force_magnitude = 12.0 * params.get_ee() / tmpRjk *
-                    (pow(params.get_r()/tmpRjk, 12) - pow(params.get_r()/tmpRjk, 6));
-                tmpFpi += force_magnitude;
+                double F_total = sqrt(Fsi_x*Fsi_x + Fsi_y*Fsi_y + Fsi_z*Fsi_z);
+                tmpFs += F_total;
             }
         }
 
-        atoms[i].set_F(tmpFsi, tmpFpi);
+        double Fpi_x = 0.0;
+        double Fpi_y = 0.0;
+        double Fpi_z = 0.0;
+
+        for (size_t j = 0; j < n; j++) {
+            if (i == j) continue;
+
+            //Vp section
+            double dx = xi - atoms[j].get_x();
+            double dy = yi - atoms[j].get_y();
+            double dz = zi - atoms[j].get_z();
+            const double r_sq = dx*dx + dy*dy + dz*dz;
+
+
+
+            if (r_sq > 1e-20) {
+                double rij = sqrt(r_sq);
+                const double ratio = r / rij;
+
+                const double ratio2 = ratio * ratio;        // r²
+                const double ratio6 = ratio2 * ratio2 * ratio2;  // r⁶
+                const double ratio12 = ratio6 * ratio6; //r^12
+
+                if (j < i) {
+                    tmpVP += ee * (ratio12 - 2.0 * ratio6);
+                }
+
+                const double force_factor = 12.0 * ee * (ratio12 - ratio6) / r_sq;
+
+                Fpi_x += force_factor * dx;
+                Fpi_y += force_factor * dy;
+                Fpi_z += force_factor * dz;
+            }
+        }
+
+        atoms[i].set_Fatoms(Fpi_x , Fpi_y, Fpi_z);
+        atoms[i].set_Fwall(Fsi_x , Fsi_y, Fsi_z);
+        std::cout << atoms[i].get_FatomX() << " " << atoms[i].get_FatomY() << " " << atoms[i].get_FatomZ() <<  std::endl;
     }
     system.setV(tmpVS+tmpVP);
-    system.setP(1./(4*M_PI*params.get_l()*params.get_l()) * tmpFs);
+    system.setP(tmpFs/(4.0*M_PI*l*l));
 }
