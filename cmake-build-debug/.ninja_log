@@ -1,7 +1,0 @@
-# ninja log v6
-14	195	1760517383372872784	CMakeFiles/kms_1.dir/atom.cpp.o	6e4f4f45954e1645
-6	571	1760517715202964411	CMakeFiles/kms_1.dir/main.cpp.o	7fcd519b14dba2b6
-6	387	1760517715203349741	CMakeFiles/kms_1.dir/system_params.cpp.o	31d4a178b80099a0
-398	426	1760517735147062276	kms_1	edcb66c258a5fd50
-6	553	1760517655921769114	CMakeFiles/kms_1.dir/parameters.cpp.o	66ab6f8e5b15d73b
-4	398	1760517734752558181	CMakeFiles/kms_1.dir/algorytm_2.cpp.o	8debf07221c0ad84
