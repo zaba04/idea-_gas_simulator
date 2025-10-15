@@ -81,7 +81,13 @@ int main() {
 
     algorytm_2.algo_2(atoms, parameters, system);
 
-    std::cout << "V:    " << system.get_V() << std::endl;
+    //
+    // std::cout << std::endl;
+    // std::cout << std::endl;
+    // std::cout << std::endl;
+    // std::cout << std::endl;
+    //
+    // std::cout << "V:    " << system.get_V() << std::endl;
 
 
     return 0;
