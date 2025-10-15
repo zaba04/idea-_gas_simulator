@@ -1,0 +1,3 @@
+/Users/annkod/CLionProjects/kms_1/cmake-build-debug/CMakeFiles/kms_1.dir
+/Users/annkod/CLionProjects/kms_1/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/annkod/CLionProjects/kms_1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
