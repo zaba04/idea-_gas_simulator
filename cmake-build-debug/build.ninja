@@ -73,6 +73,12 @@ build CMakeFiles/kms_1.dir/algorytm_2.cpp.o: CXX_COMPILER__kms_1_unscanned_Debug
   OBJECT_DIR = CMakeFiles/kms_1.dir
   OBJECT_FILE_DIR = CMakeFiles/kms_1.dir
 
+build CMakeFiles/kms_1.dir/system_params.cpp.o: CXX_COMPILER__kms_1_unscanned_Debug /Users/annkod/CLionProjects/kms_1/system_params.cpp || cmake_object_order_depends_target_kms_1
+  DEP_FILE = CMakeFiles/kms_1.dir/system_params.cpp.o.d
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/kms_1.dir
+  OBJECT_FILE_DIR = CMakeFiles/kms_1.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target kms_1
@@ -81,7 +87,7 @@ build CMakeFiles/kms_1.dir/algorytm_2.cpp.o: CXX_COMPILER__kms_1_unscanned_Debug
 #############################################
 # Link the executable kms_1
 
-build kms_1: CXX_EXECUTABLE_LINKER__kms_1_Debug CMakeFiles/kms_1.dir/main.cpp.o CMakeFiles/kms_1.dir/atom.cpp.o CMakeFiles/kms_1.dir/parameters.cpp.o CMakeFiles/kms_1.dir/algorytm_2.cpp.o
+build kms_1: CXX_EXECUTABLE_LINKER__kms_1_Debug CMakeFiles/kms_1.dir/main.cpp.o CMakeFiles/kms_1.dir/atom.cpp.o CMakeFiles/kms_1.dir/parameters.cpp.o CMakeFiles/kms_1.dir/algorytm_2.cpp.o CMakeFiles/kms_1.dir/system_params.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk
   OBJECT_DIR = CMakeFiles/kms_1.dir
   POST_BUILD = :
