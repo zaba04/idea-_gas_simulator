@@ -7,4 +7,8 @@ add_executable(kms_1 main.cpp
         atom.cpp
         atom.h
         parameters.cpp
-        parameters.h)
+        parameters.h
+        algorytm_2.cpp
+        algorytm_2.h
+        system_params.cpp
+        system_params.h)

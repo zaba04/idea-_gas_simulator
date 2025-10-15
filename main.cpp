@@ -3,6 +3,7 @@
 #include <random>
 #include "atom.h"
 #include "parameters.h"
+#include "algorytm_2.h"
 
 
 #define k_b 0.00831
@@ -17,7 +18,9 @@ int main() {
     parameters parameters;
 
     std::vector<atom> atoms;
+    system_params system;
 
+    algorytm_2 algorytm_2;
 
     //part setting start xyz values
     for (int i = 0; i < parameters.get_n(); ++i) {
@@ -28,8 +31,8 @@ int main() {
                 float tmpz = 0;
 
                 double b0[3] = {parameters.get_a(), 0, 0};
-                double b1[3] = {parameters.get_a()/2., (parameters.get_a()*sqrt(3))/2. , 0};
-                double b2[3] = {parameters.get_a()/2., (parameters.get_a()*sqrt(3))/6. , parameters.get_a()*sqrt(2/3.)};
+                double b1[3] = {parameters.get_a()/2., parameters.get_a()*sqrt(3)/2. , 0};
+                double b2[3] = {parameters.get_a()/2., parameters.get_a()*sqrt(3)/6. , parameters.get_a()*sqrt(2/3.)};
 
                 float tmpp = (parameters.get_n()-1);
 
@@ -65,14 +68,21 @@ int main() {
 
         //sprawdzić artefakty układające się po krzyżu
 
-        std::cout << tmpMomx << " " << tmpMomy << " " << tmpMomz << std::endl;
         atoms[i].set_p(tmpMomx, tmpMomy, tmpMomz);
     }
 
     for (size_t i = 0; i <= atoms.size(); ++i) {
-
+        double tmpx = atoms[i].get_px() - 1./atoms.size()*sumMomX;
+        double tmpy = atoms[i].get_py() - 1./atoms.size()*sumMomY;
+        double tmpz = atoms[i].get_pz() - 1./atoms.size()*sumMomZ;
+        atoms[i].set_p(tmpx, tmpy, tmpz);
+        // std::cout << tmpx << " " << tmpy << " " << tmpz << std::endl;
     }
-    //został boost do środka spoczynku do dopisania
+
+    algorytm_2.algo_2(atoms, parameters, system);
+
+    std::cout << "V:    " << system.get_V() << std::endl;
+
 
     return 0;
 }

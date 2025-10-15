@@ -25,7 +25,7 @@ class parameters {
     int s_xyz;
     public:
     parameters()
-        : n(50), m(1), e(1), R(0.38), f(10000), L(1.2), a(0.38), t_zero(100), tau(0.002), s_o(100), s_d(2000), s_out(10), s_xyz(10) {};
+        : n(5), m(39.948), e(1), R(0.38), f(10000), L(2.3), a(0.38), t_zero(100), tau(0.002), s_o(100), s_d(2000), s_out(10), s_xyz(10) {};
 
     parameters(const std::string& filename);
     ~parameters(){};
