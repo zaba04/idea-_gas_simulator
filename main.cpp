@@ -79,15 +79,68 @@ int main() {
         // std::cout << tmpx << " " << tmpy << " " << tmpz << std::endl;
     }
 
-    algorytm_2.algo_2(atoms, parameters, system);
+    for (size_t i = 0; i <= atoms.size(); ++i) {
+        algorytm_2.algo_2(atoms, parameters, system, i);
+    }
 
-    //
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-    //
-    // std::cout << "V:    " << system.get_V() << std::endl;
+    //dynamika
+    double tmppx = 0.0;
+    double tmppy = 0.0;
+    double tmppz = 0.0;
+    double tmpFx = 0.0;
+    double tmpFy = 0.0;
+    double tmpFz = 0.0;
+    double tmpRx = 0.0;
+    double tmpRy = 0.0;
+    double tmpRz = 0.0;
+    double tau = parameters.get_tau();
+    double m = parameters.get_m();
+
+    for (int s = 0; s < parameters.get_s_d()+parameters.get_s_o(); s++) {
+        double tmpEkin = 0.0;
+        for (size_t i = 0; i < atoms.size(); i++) {
+            tmppx = atoms[i].get_px();
+            tmppy = atoms[i].get_py();
+            tmppz = atoms[i].get_pz();
+            tmpFy = atoms[i].get_FwallY() + atoms[i].get_FatomY();
+            tmpFx = atoms[i].get_FwallX() + atoms[i].get_FatomX();
+            tmpFz = atoms[i].get_FwallZ() + atoms[i].get_FatomZ();
+            tmpRx = atoms[i].get_x();
+            tmpRy = atoms[i].get_y();
+            tmpRz = atoms[i].get_z();
+
+            //momentas
+            double tmppx12 = tmppx + 0.5*tmpFx*tau;
+            double tmppy12 = tmppy + 0.5*tmpFy*tau;
+            double tmppz12 = tmppz + 0.5*tmpFz*tau;
+
+            //positions
+            double tmprx = tmpRx + 1./m * tmppx12 * tau;
+            double tmpry = tmpRy + 1./m * tmppy12 * tau;
+            double tmprz = tmpRz + 1./m * tmppz12 * tau;
+
+            atoms[i].set_p(tmppx12, tmppy12, tmppz12);
+            atoms[i].set_pos(tmprx, tmpry, tmprz);
+
+            //calculating new
+            algorytm_2.algo_2(atoms, parameters, system, i);
+
+            tmpFy = atoms[i].get_FwallY() + atoms[i].get_FatomY();
+            tmpFx = atoms[i].get_FwallX() + atoms[i].get_FatomX();
+            tmpFz = atoms[i].get_FwallZ() + atoms[i].get_FatomZ();
+
+            double tmppx1 = tmppx12 + 0.5*tmpFx*tau;
+            double tmppy1 = tmppy12 + 0.5*tmpFy*tau;
+            double tmppz1 = tmppz12 + 0.5*tmpFz*tau;
+
+            atoms[i].set_p(tmppx1, tmppy1, tmppz1);
+
+            tmpEkin += (tmppx1*tmppx1 + tmppy1*tmppy1 + tmppz1*tmppz1) /(2 * m);
+        }
+
+        double tmpT = 2./(3.*k_b*atoms.size()) * tmpEkin;
+        double tmpH = tmpEkin + system.get_V();
+    }
 
 
     return 0;

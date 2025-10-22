@@ -11,7 +11,7 @@
 
 class parameters {
     int n; //amount of atoms on 1/3
-    int m; // mass i guess
+    double m; // mass i guess
     int e; //funno
     float R; //radius of cube
     double f; //dunno
@@ -30,7 +30,7 @@ class parameters {
     parameters(const std::string& filename);
     ~parameters(){};
     int get_n() { return n; }
-    int get_m() { return m; }
+    double get_m() { return m; }
     int get_ee() { return e; }
     float get_r() { return R; }
     double get_f() { return f; }
