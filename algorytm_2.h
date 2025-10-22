@@ -19,7 +19,7 @@ class algorytm_2 {
     public:
     algorytm_2() = default;
     ~algorytm_2() = default;
-    void algo_2(std::vector<atom>&, parameters&, system_params&);
+    void algo_2(std::vector<atom>&, parameters&, system_params&, int);
 
 };
 

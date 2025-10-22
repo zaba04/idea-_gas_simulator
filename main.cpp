@@ -1,12 +1,15 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <fstream>
+#include <iomanip>
 #include "atom.h"
 #include "parameters.h"
 #include "algorytm_2.h"
 
 
 #define k_b 0.00831
+
 int main() {
 
     std::random_device rd;
@@ -16,10 +19,8 @@ int main() {
 
 
     parameters parameters;
-
     std::vector<atom> atoms;
     system_params system;
-
     algorytm_2 algorytm_2;
 
     //part setting start xyz values
@@ -79,16 +80,104 @@ int main() {
         // std::cout << tmpx << " " << tmpy << " " << tmpz << std::endl;
     }
 
-    algorytm_2.algo_2(atoms, parameters, system);
+    for (size_t i = 0; i <= atoms.size(); ++i) {
+        algorytm_2.algo_2(atoms, parameters, system, i);
+    }
 
-    //
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-    //
-    // std::cout << "V:    " << system.get_V() << std::endl;
+    //opening files
+    std::ofstream file_xyz("plik_xyz.txt", std::ios::app);
+    std::ofstream file_avs("avs.dat", std::ios::app);
 
+    for (size_t i = 0; i <= atoms.size(); ++i) {
+        file_xyz << atoms[i].get_x() << "   " << atoms[i].get_y() << "   " << atoms[i].get_z() << std::endl;
+    }
+    file_xyz << std::endl;
+    file_xyz << std::endl;
 
+    //dynamika
+    double tmppx = 0.0;
+    double tmppy = 0.0;
+    double tmppz = 0.0;
+    double tmpFx = 0.0;
+    double tmpFy = 0.0;
+    double tmpFz = 0.0;
+    double tmpRx = 0.0;
+    double tmpRy = 0.0;
+    double tmpRz = 0.0;
+    double Tmean = 0.0;
+    double Pmean = 0.0;
+    double Hmean = 0.0;
+    double tau = parameters.get_tau();
+    double m = parameters.get_m();
+
+    for (int s = 0; s < parameters.get_s_d()+parameters.get_s_o(); s++) {
+        double tmpEkin = 0.0;
+        for (size_t i = 0; i < atoms.size(); i++) {
+            tmppx = atoms[i].get_px();
+            tmppy = atoms[i].get_py();
+            tmppz = atoms[i].get_pz();
+            tmpFy = atoms[i].get_FwallY() + atoms[i].get_FatomY();
+            tmpFx = atoms[i].get_FwallX() + atoms[i].get_FatomX();
+            tmpFz = atoms[i].get_FwallZ() + atoms[i].get_FatomZ();
+            tmpRx = atoms[i].get_x();
+            tmpRy = atoms[i].get_y();
+            tmpRz = atoms[i].get_z();
+
+            //momentas
+            double tmppx12 = tmppx + 0.5*tmpFx*tau;
+            double tmppy12 = tmppy + 0.5*tmpFy*tau;
+            double tmppz12 = tmppz + 0.5*tmpFz*tau;
+
+            //positions
+            double tmprx = tmpRx + 1./m * tmppx12 * tau;
+            double tmpry = tmpRy + 1./m * tmppy12 * tau;
+            double tmprz = tmpRz + 1./m * tmppz12 * tau;
+
+            atoms[i].set_p(tmppx12, tmppy12, tmppz12);
+            atoms[i].set_pos(tmprx, tmpry, tmprz);
+
+            //calculating new
+            algorytm_2.algo_2(atoms, parameters, system, i);
+
+            tmpFy = atoms[i].get_FwallY() + atoms[i].get_FatomY();
+            tmpFx = atoms[i].get_FwallX() + atoms[i].get_FatomX();
+            tmpFz = atoms[i].get_FwallZ() + atoms[i].get_FatomZ();
+
+            double tmppx1 = tmppx12 + 0.5*tmpFx*tau;
+            double tmppy1 = tmppy12 + 0.5*tmpFy*tau;
+            double tmppz1 = tmppz12 + 0.5*tmpFz*tau;
+
+            atoms[i].set_p(tmppx1, tmppy1, tmppz1);
+
+            tmpEkin += (tmppx1*tmppx1 + tmppy1*tmppy1 + tmppz1*tmppz1) /(2 * m);
+        }
+
+        double tmpT = 2./(3.*k_b*atoms.size()) * tmpEkin;
+        double tmpH = tmpEkin + system.get_V();
+        system.setH(tmpH);
+        system.setT(tmpT);
+
+        if (s%parameters.get_s_out()==0) {
+            file_avs << std::scientific << std::setprecision(9);
+            file_avs << s*tau << " " << tmpH << " " << system.get_V() << " " << tmpT << " " << system.get_P() << std::endl;
+        }
+
+        if (s%parameters.get_s_xyz()==0) {
+            for (size_t i = 0; i < atoms.size(); i++) {
+                file_xyz << atoms[i].get_x() << "   " << atoms[i].get_y() << "   " << atoms[i].get_z() << std::endl;
+            }
+            file_xyz << std::endl;
+            file_xyz << std::endl;
+        }
+
+        if (s >= parameters.get_s_o()) {
+            Tmean += tmpT / s;
+            Pmean += system.get_P() / s;
+            Hmean += tmpH / s;
+        }
+    }
+
+    file_xyz.close();
+    file_avs.close();
     return 0;
 }

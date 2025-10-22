@@ -11,7 +11,7 @@
 
 class parameters {
     int n; //amount of atoms on 1/3
-    int m; // mass i guess
+    double m; // mass i guess
     int e; //funno
     float R; //radius of cube
     double f; //dunno
@@ -25,12 +25,12 @@ class parameters {
     int s_xyz;
     public:
     parameters()
-        : n(5), m(39.948), e(1), R(0.38), f(10000), L(2.3), a(0.38), t_zero(100), tau(0.002), s_o(100), s_d(2000), s_out(10), s_xyz(10) {};
+        : n(5), m(39.948), e(1), R(0.38), f(10000), L(2.3), a(0.38), t_zero(100), tau(0.002), s_o(100), s_d(2000), s_out(10), s_xyz(10) {}
 
     parameters(const std::string& filename);
-    ~parameters(){};
+    ~parameters(){}
     int get_n() { return n; }
-    int get_m() { return m; }
+    double get_m() { return m; }
     int get_ee() { return e; }
     float get_r() { return R; }
     double get_f() { return f; }
@@ -41,7 +41,7 @@ class parameters {
     int get_s_o() { return s_o; }
     long get_s_d() { return s_d; }
     int get_s_out() { return s_out; }
-    int get_s_xy() { return s_xyz; }
+    int get_s_xyz() { return s_xyz; }
 
 };
 

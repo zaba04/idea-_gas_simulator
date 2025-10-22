@@ -34,6 +34,7 @@ class atom {
     double get_FatomY(){return Fatoms[1];}
     double get_FatomZ(){return Fatoms[2];}
     double get_R();
+    void set_pos(double x, double y, double z){this->x = x;this->y = y; this->z = z;}
 
 };
 
