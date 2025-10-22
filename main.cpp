@@ -1,12 +1,15 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <fstream>
+#include <iomanip>
 #include "atom.h"
 #include "parameters.h"
 #include "algorytm_2.h"
 
 
 #define k_b 0.00831
+
 int main() {
 
     std::random_device rd;
@@ -16,10 +19,8 @@ int main() {
 
 
     parameters parameters;
-
     std::vector<atom> atoms;
     system_params system;
-
     algorytm_2 algorytm_2;
 
     //part setting start xyz values
@@ -82,6 +83,16 @@ int main() {
     for (size_t i = 0; i <= atoms.size(); ++i) {
         algorytm_2.algo_2(atoms, parameters, system, i);
     }
+
+    //opening files
+    std::ofstream file_xyz("plik_xyz.txt", std::ios::app);
+    std::ofstream file_avs("avs.dat", std::ios::app);
+
+    for (size_t i = 0; i <= atoms.size(); ++i) {
+        file_xyz << atoms[i].get_x() << "   " << atoms[i].get_y() << "   " << atoms[i].get_z() << std::endl;
+    }
+    file_xyz << std::endl;
+    file_xyz << std::endl;
 
     //dynamika
     double tmppx = 0.0;
@@ -147,11 +158,18 @@ int main() {
         system.setT(tmpT);
 
         if (s%parameters.get_s_out()==0) {
-            //zapis t,H,P,V
+            file_avs << std::scientific << std::setprecision(9);
+            file_avs << s*tau << " " << tmpH << " " << system.get_V() << " " << tmpT << " " << system.get_P() << std::endl;
         }
+
         if (s%parameters.get_s_xyz()==0) {
-            //zapis współrzędnych
+            for (size_t i = 0; i < atoms.size(); i++) {
+                file_xyz << atoms[i].get_x() << "   " << atoms[i].get_y() << "   " << atoms[i].get_z() << std::endl;
+            }
+            file_xyz << std::endl;
+            file_xyz << std::endl;
         }
+
         if (s >= parameters.get_s_o()) {
             Tmean += tmpT / s;
             Pmean += system.get_P() / s;
@@ -159,6 +177,7 @@ int main() {
         }
     }
 
-
+    file_xyz.close();
+    file_avs.close();
     return 0;
 }
