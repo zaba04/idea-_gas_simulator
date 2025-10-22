@@ -41,7 +41,7 @@ class parameters {
     int get_s_o() { return s_o; }
     long get_s_d() { return s_d; }
     int get_s_out() { return s_out; }
-    int get_s_xy() { return s_xyz; }
+    int get_s_xyz() { return s_xyz; }
 
 };
 

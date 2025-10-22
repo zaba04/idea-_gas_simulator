@@ -93,6 +93,9 @@ int main() {
     double tmpRx = 0.0;
     double tmpRy = 0.0;
     double tmpRz = 0.0;
+    double Tmean = 0.0;
+    double Pmean = 0.0;
+    double Hmean = 0.0;
     double tau = parameters.get_tau();
     double m = parameters.get_m();
 
@@ -140,6 +143,20 @@ int main() {
 
         double tmpT = 2./(3.*k_b*atoms.size()) * tmpEkin;
         double tmpH = tmpEkin + system.get_V();
+        system.setH(tmpH);
+        system.setT(tmpT);
+
+        if (s%parameters.get_s_out()==0) {
+            //zapis t,H,P,V
+        }
+        if (s%parameters.get_s_xyz()==0) {
+            //zapis współrzędnych
+        }
+        if (s >= parameters.get_s_o()) {
+            Tmean += tmpT / s;
+            Pmean += system.get_P() / s;
+            Hmean += tmpH / s;
+        }
     }
 
 

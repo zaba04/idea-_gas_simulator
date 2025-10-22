@@ -21,8 +21,10 @@ class system_params {
     double get_P() {return P;};
     double get_H() {return H;};
     double get_T() {return T;};
-    void setV(double V) {this->V = V;};
-    void setP(double P) {this->P = P;};
+    void setV(double V) {this->V = V;}
+    void setP(double P) {this->P = P;}
+    void setH(double H) {this->H = H;}
+    void setT(double T) {this->T = T;}
 };
 
 
