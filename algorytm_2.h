@@ -19,7 +19,10 @@ class algorytm_2 {
     public:
     algorytm_2() = default;
     ~algorytm_2() = default;
-    void algo_2(std::vector<atom>&, parameters&, system_params&, int);
+    void calculate_forces_for_atom(std::vector<atom>& atoms, parameters& params, int i);
+    double calculate_total_energy(std::vector<atom>& atoms, parameters& params);
+    double calculate_pressure(std::vector<atom>& atoms, parameters& params);
+
 
 };
 

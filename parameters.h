@@ -25,7 +25,7 @@ class parameters {
     int s_xyz;
     public:
     parameters()
-        : n(5), m(39.948), e(1), R(0.38), f(10000), L(2.3), a(0.38), t_zero(100), tau(0.002), s_o(100), s_d(2000), s_out(10), s_xyz(10) {}
+        : n(5), m(39.948), e(1), R(0.38), f(10000), L(2.3), a(0.38), t_zero(100), tau(0.002), s_o(500), s_d(8000), s_out(10), s_xyz(10) {}
 
     parameters(const std::string& filename);
     ~parameters(){}
@@ -42,6 +42,20 @@ class parameters {
     long get_s_d() { return s_d; }
     int get_s_out() { return s_out; }
     int get_s_xyz() { return s_xyz; }
+
+    void set_n(int value) { n = value; }
+    void set_m(double value) { m = value; }
+    void set_e(double value) { e = value; }
+    void set_R(double value) { R = value; }
+    void set_f(double value) { f = value; }
+    void set_L(double value) { L = value; }
+    void set_a(double value) { a = value; }
+    void set_t_zero(double value) { t_zero = value; }
+    void set_tau(double value) { tau = value; }
+    void set_S_o(int value) { s_o = value; }
+    void set_S_d(int value) { s_d = value; }
+    void set_S_out(int value) { s_out = value; }
+    void set_S_xyz(int value) { s_xyz = value; }
 
 };
 

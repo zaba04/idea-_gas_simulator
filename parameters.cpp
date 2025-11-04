@@ -4,31 +4,53 @@
 
 #include "parameters.h"
 
-parameters::parameters(const std::string &filename) {
+#include <sstream>
+
+parameters::parameters(const std::string& filename) {
+    // Ustaw wartości domyślne
+    n = 5;
+    m = 39.948;
+    e= 1.0;
+    R = 0.38;
+    f = 10000.0;
+    L = 2.3;
+    a = 0.38;
+    t_zero = 100.0;
+    tau = 0.002;
+    s_o = 500;
+    s_d = 8000;
+    s_out = 10;
+    s_xyz = 10;
+
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error opening file " << filename << std::endl;
-        exit(1);
-    }
-    std::vector<double> tmpparams;
-    double tmp;
-
-    while (file >> tmp) {
-        tmpparams.push_back(tmp);
+        std::cerr << "Warning: Could not open file " << filename
+                  << ". Using default parameters." << std::endl;
+        return;
     }
 
-    n = tmpparams[0];
-    m = tmpparams[1];
-    e = tmpparams[2];
-    R = tmpparams[3];
-    f = tmpparams[4];
-    L = tmpparams[5];
-    a = tmpparams[6];
-    t_zero = tmpparams[7];
-    tau = tmpparams[8];
-    s_o = tmpparams[9];
-    s_d = tmpparams[10];
-    s_out = tmpparams[11];
-    s_xyz = tmpparams[12];
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue;
 
+        std::istringstream iss(line);
+        std::string key;
+
+        if (iss >> key) {
+            if (key == "n") iss >> n;
+            else if (key == "m") iss >> m;
+            else if (key == "epsilon" || key == "e") iss >> e;
+            else if (key == "R") iss >> R;
+            else if (key == "f") iss >> f;
+            else if (key == "L") iss >> L;
+            else if (key == "a") iss >> a;
+            else if (key == "T0") iss >> t_zero;
+            else if (key == "tau") iss >> tau;
+            else if (key == "S_o") iss >> s_o;
+            else if (key == "S_d") iss >> s_d;
+            else if (key == "S_out") iss >> s_out;
+            else if (key == "S_xyz") iss >> s_xyz;
+        }
+    }
+    file.close();
 }

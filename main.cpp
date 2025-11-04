@@ -11,17 +11,39 @@
 #define k_b 0.00831
 
 int main() {
-
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> dis(std::nextafter(0.0, 1.0), 1.0);
-    std::uniform_int_distribution<int> sig(-1, 1);
+    std::uniform_int_distribution<int> sign(0, 1);
+
 
 
     parameters parameters;
     std::vector<atom> atoms;
     system_params system;
     algorytm_2 algorytm_2;
+
+    std::ofstream param_file("params");
+    if (!param_file.is_open()) {
+        std::cerr << "Nie mogę utworzyć pliku params" << std::endl;
+        return 1;
+    }
+
+    // MUSI BYĆ DOKŁADNIE 13 WARTOŚCI:
+    param_file << parameters.get_n() << " "               // n
+               << parameters.get_m() << " "               // mm
+               << parameters.get_ee() << " "             // epseps
+               << parameters.get_r() << " "               // RR
+               << parameters.get_f() << " "               // ff
+               << parameters.get_l() << " "        // L_sphere
+               << parameters.get_a() << " "               // aa
+               << parameters.get_t_zero() << " "          // TT
+               << parameters.get_tau() << " "             // tautau
+               << parameters.get_s_o() << " "             // So
+               << parameters.get_s_d() << " "             // Sd
+               << parameters.get_s_out() << " "           // Sout
+               << parameters.get_s_xyz() << std::endl;    // Sxyz
+    param_file.close();
 
     //part setting start xyz values
     for (int i = 0; i < parameters.get_n(); ++i) {
@@ -32,8 +54,8 @@ int main() {
                 float tmpz = 0;
 
                 double b0[3] = {parameters.get_a(), 0, 0};
-                double b1[3] = {parameters.get_a()/2., parameters.get_a()*sqrt(3)/2. , 0};
-                double b2[3] = {parameters.get_a()/2., parameters.get_a()*sqrt(3)/6. , parameters.get_a()*sqrt(2/3.)};
+                double b1[3] = {parameters.get_a()/2., parameters.get_a()*sqrt(3.)/2. , 0};
+                double b2[3] = {parameters.get_a()/2., parameters.get_a()*sqrt(3.)/6. , parameters.get_a()*sqrt(2./3.)};
 
                 float tmpp = (parameters.get_n()-1);
 
@@ -52,27 +74,27 @@ int main() {
     double sumMomY = 0.;
     double sumMomZ = 0.;
     //generating momenta
-    for (size_t i = 0; i <= atoms.size(); ++i) {
+    for (size_t i = 0; i < atoms.size(); ++i) {
         double tmpEx = -0.5 * (k_b * parameters.get_t_zero()* std::log(dis(gen)));
         double tmpEy = -0.5 * (k_b * parameters.get_t_zero()* std::log(dis(gen)));
         double tmpEz = -0.5 * (k_b * parameters.get_t_zero()* std::log(dis(gen)));
 
-        int sign = sig(gen);
-        double tmpMomx = sign * sqrt(2* parameters.get_m() * tmpEx);
+        int signe = 0;
+        signe = (sign(gen) == 0) ? -1 : 1;
+        double tmpMomx = signe * sqrt(2* parameters.get_m() * tmpEx);
         sumMomX += tmpMomx;
-        sign = sig(gen);
-        double tmpMomy = sign * sqrt(2* parameters.get_m() * tmpEy);
+        signe = (sign(gen) == 0) ? -1 : 1;
+        double tmpMomy = signe * sqrt(2* parameters.get_m() * tmpEy);
         sumMomY += tmpMomy;
-        sign = sig(gen);
-        double tmpMomz = sign * sqrt(2* parameters.get_m() * tmpEz);
+        signe = (sign(gen) == 0) ? -1 : 1;
+        double tmpMomz = signe * sqrt(2* parameters.get_m() * tmpEz);
         sumMomZ += tmpMomz;
 
-        //sprawdzić artefakty układające się po krzyżu
 
         atoms[i].set_p(tmpMomx, tmpMomy, tmpMomz);
     }
 
-    for (size_t i = 0; i <= atoms.size(); ++i) {
+    for (size_t i = 0; i < atoms.size(); ++i) {
         double tmpx = atoms[i].get_px() - 1./atoms.size()*sumMomX;
         double tmpy = atoms[i].get_py() - 1./atoms.size()*sumMomY;
         double tmpz = atoms[i].get_pz() - 1./atoms.size()*sumMomZ;
@@ -80,19 +102,18 @@ int main() {
         // std::cout << tmpx << " " << tmpy << " " << tmpz << std::endl;
     }
 
-    for (size_t i = 0; i <= atoms.size(); ++i) {
-        algorytm_2.algo_2(atoms, parameters, system, i);
+    for (size_t i = 0; i < atoms.size(); ++i) {
+        algorytm_2.calculate_forces_for_atom(atoms, parameters, i);
     }
+    double total_V = algorytm_2.calculate_total_energy(atoms, parameters);
+    double total_P = algorytm_2.calculate_pressure(atoms, parameters);
+    system.setV(total_V);
+    system.setP(total_P);
 
     //opening files
-    std::ofstream file_xyz("plik_xyz.txt", std::ios::app);
-    std::ofstream file_avs("avs.dat", std::ios::app);
+    std::ofstream file_xyz("xyz.dat");
+    std::ofstream file_out("out.dat");
 
-    for (size_t i = 0; i <= atoms.size(); ++i) {
-        file_xyz << atoms[i].get_x() << "   " << atoms[i].get_y() << "   " << atoms[i].get_z() << std::endl;
-    }
-    file_xyz << std::endl;
-    file_xyz << std::endl;
 
     //dynamika
     double tmppx = 0.0;
@@ -111,44 +132,61 @@ int main() {
     double m = parameters.get_m();
 
     for (int s = 0; s < parameters.get_s_d()+parameters.get_s_o(); s++) {
+
+        // Krok 1: p(t + τ/2) dla wszystkich atomów
+        for (size_t i = 0; i < atoms.size(); i++) {
+            double tmppx = atoms[i].get_px();
+            double tmppy = atoms[i].get_py();
+            double tmppz = atoms[i].get_pz();
+            double tmpFx = atoms[i].get_FwallX() + atoms[i].get_FatomX();
+            double tmpFy = atoms[i].get_FwallY() + atoms[i].get_FatomY();
+            double tmpFz = atoms[i].get_FwallZ() + atoms[i].get_FatomZ();
+
+            atoms[i].set_p(tmppx + 0.5*tmpFx*tau,
+                           tmppy + 0.5*tmpFy*tau,
+                           tmppz + 0.5*tmpFz*tau);
+        }
+
+        // Krok 2: r(t + τ) dla wszystkich atomów
+        for (size_t i = 0; i < atoms.size(); i++) {
+            double tmpRx = atoms[i].get_x();
+            double tmpRy = atoms[i].get_y();
+            double tmpRz = atoms[i].get_z();
+            double tmppx12 = atoms[i].get_px();
+            double tmppy12 = atoms[i].get_py();
+            double tmppz12 = atoms[i].get_pz();
+
+            atoms[i].set_pos(tmpRx + (1./m) * tmppx12 * tau,
+                            tmpRy + (1./m) * tmppy12 * tau,
+                            tmpRz + (1./m) * tmppz12 * tau);
+        }
+
+        // Oblicz nowe siły dla wszystkich atomów
+        for (size_t i = 0; i < atoms.size(); i++) {
+            algorytm_2.calculate_forces_for_atom(atoms, parameters, i);
+        }
+
+        // Oblicz energię i ciśnienie
+        double total_V = algorytm_2.calculate_total_energy(atoms, parameters);
+        double total_P = algorytm_2.calculate_pressure(atoms, parameters);
+        system.setV(total_V);
+        system.setP(total_P);
+
+        // Krok 3: p(t + τ) i energia kinetyczna
         double tmpEkin = 0.0;
         for (size_t i = 0; i < atoms.size(); i++) {
-            tmppx = atoms[i].get_px();
-            tmppy = atoms[i].get_py();
-            tmppz = atoms[i].get_pz();
-            tmpFy = atoms[i].get_FwallY() + atoms[i].get_FatomY();
-            tmpFx = atoms[i].get_FwallX() + atoms[i].get_FatomX();
-            tmpFz = atoms[i].get_FwallZ() + atoms[i].get_FatomZ();
-            tmpRx = atoms[i].get_x();
-            tmpRy = atoms[i].get_y();
-            tmpRz = atoms[i].get_z();
-
-            //momentas
-            double tmppx12 = tmppx + 0.5*tmpFx*tau;
-            double tmppy12 = tmppy + 0.5*tmpFy*tau;
-            double tmppz12 = tmppz + 0.5*tmpFz*tau;
-
-            //positions
-            double tmprx = tmpRx + 1./m * tmppx12 * tau;
-            double tmpry = tmpRy + 1./m * tmppy12 * tau;
-            double tmprz = tmpRz + 1./m * tmppz12 * tau;
-
-            atoms[i].set_p(tmppx12, tmppy12, tmppz12);
-            atoms[i].set_pos(tmprx, tmpry, tmprz);
-
-            //calculating new
-            algorytm_2.algo_2(atoms, parameters, system, i);
-
-            tmpFy = atoms[i].get_FwallY() + atoms[i].get_FatomY();
-            tmpFx = atoms[i].get_FwallX() + atoms[i].get_FatomX();
-            tmpFz = atoms[i].get_FwallZ() + atoms[i].get_FatomZ();
+            double tmppx12 = atoms[i].get_px();
+            double tmppy12 = atoms[i].get_py();
+            double tmppz12 = atoms[i].get_pz();
+            double tmpFx = atoms[i].get_FwallX() + atoms[i].get_FatomX();
+            double tmpFy = atoms[i].get_FwallY() + atoms[i].get_FatomY();
+            double tmpFz = atoms[i].get_FwallZ() + atoms[i].get_FatomZ();
 
             double tmppx1 = tmppx12 + 0.5*tmpFx*tau;
             double tmppy1 = tmppy12 + 0.5*tmpFy*tau;
             double tmppz1 = tmppz12 + 0.5*tmpFz*tau;
 
             atoms[i].set_p(tmppx1, tmppy1, tmppz1);
-
             tmpEkin += (tmppx1*tmppx1 + tmppy1*tmppy1 + tmppz1*tmppz1) /(2 * m);
         }
 
@@ -157,27 +195,38 @@ int main() {
         system.setH(tmpH);
         system.setT(tmpT);
 
-        if (s%parameters.get_s_out()==0) {
-            file_avs << std::scientific << std::setprecision(9);
-            file_avs << s*tau << " " << tmpH << " " << system.get_V() << " " << tmpT << " " << system.get_P() << std::endl;
+        if (s % parameters.get_s_out() == 0) {
+            file_out << std::fixed << std::setprecision(6);
+            file_out << s * tau << " "
+                     << tmpT << " "
+                     << tmpEkin << " "
+                     << system.get_V() << " "
+                     << (tmpEkin + system.get_V())
+                     << std::endl;
         }
 
-        if (s%parameters.get_s_xyz()==0) {
+        if (s % parameters.get_s_xyz() == 0) {
             for (size_t i = 0; i < atoms.size(); i++) {
-                file_xyz << atoms[i].get_x() << "   " << atoms[i].get_y() << "   " << atoms[i].get_z() << std::endl;
+                file_xyz << atoms[i].get_x() << " " << atoms[i].get_y() << " " << atoms[i].get_z() << " ";
             }
             file_xyz << std::endl;
-            file_xyz << std::endl;
+            file_xyz.flush();
         }
 
         if (s >= parameters.get_s_o()) {
-            Tmean += tmpT / s;
-            Pmean += system.get_P() / s;
-            Hmean += tmpH / s;
+            Tmean += tmpT;
+            Pmean += system.get_P();
+            Hmean += tmpH;
         }
     }
 
+
+    int count_steps = parameters.get_s_d();
+    Tmean /= count_steps;
+    Pmean /= count_steps;
+    Hmean /= count_steps;
+
     file_xyz.close();
-    file_avs.close();
+    file_out.close();
     return 0;
 }
